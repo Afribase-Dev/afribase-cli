@@ -1,0 +1,61 @@
+version: 2
+
+project_name: afribase
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: afribase
+    main: .
+    binary: afribase
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    # Version metadata is stamped into the vars the `version` command prints,
+    # so a bug report can name the exact build it came from.
+    ldflags:
+      - -s -w
+      - -X github.com/afribase/cli/cmd.version={{.Version}}
+      - -X github.com/afribase/cli/cmd.commit={{.Commit}}
+      - -X github.com/afribase/cli/cmd.date={{.Date}}
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+# Homebrew tap. Requires a github.com/afribase/homebrew-tap repository and a
+# token with write access to it; until both exist, releases still publish the
+# archives above and this step is the only part that fails.
+brews:
+  - name: afribase
+    repository:
+      owner: afribase
+      name: homebrew-tap
+    homepage: https://useafribase.app
+    description: Manage Afribase projects, databases and deployments from the terminal
+    license: MIT
+    install: |
+      bin.install "afribase"
+    test: |
+      system "#{bin}/afribase", "version"
