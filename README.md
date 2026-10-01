@@ -12,8 +12,8 @@ brew install afribase/tap/afribase
 go install github.com/afribase/cli@latest
 
 # From source
-git clone https://github.com/afribase/afribase-backend
-cd afribase-backend/cli && make install
+git clone https://github.com/Afribase-Dev/afribase-cli
+cd afribase-cli && make install
 ```
 
 Verify with `afribase version`.
